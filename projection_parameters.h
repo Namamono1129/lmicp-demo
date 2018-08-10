@@ -176,26 +176,35 @@ public:
 		this->opticalAxisVector = new OpticalAxisVector(new_vec_o(0), new_vec_o(1));
 	}
 
-	/* Experimental: Only returns optical axes */
+
 	Eigen::VectorXf GetParamsAsVector()
 	{
-		Eigen::VectorXf paramsVector(2);	// MagicNumber
-		paramsVector(0) = this->opticalAxisVector->o_x;
-		paramsVector(1) = this->opticalAxisVector->o_y;
+		Eigen::VectorXf paramsVector(12);	// MagicNumber
+		paramsVector(0) = this->rotationMatrix->r_11;
+		paramsVector(1) = this->rotationMatrix->r_12;
+		paramsVector(2) = this->rotationMatrix->r_13;
+		paramsVector(3) = this->rotationMatrix->r_21;
+		paramsVector(4) = this->rotationMatrix->r_22;
+		paramsVector(5) = this->rotationMatrix->r_23;
+		paramsVector(6) = this->f;
+		paramsVector(7) = this->cameraDisplacementVector->tau_x;
+		paramsVector(8) = this->cameraDisplacementVector->tau_y;
+		paramsVector(9) = this->cameraDisplacementVector->tau_z;
+		paramsVector(10) = this->opticalAxisVector->o_x;
+		paramsVector(11) = this->opticalAxisVector->o_y;
 		return paramsVector;
 	}
 
-	/* Experimental: Only accepts 5d vector for camera displacement(tau) & optical axes(o) */
+
 	ProjectionParameters createFromVector(Eigen::VectorXf sourceVector)
 	{
-		assert(sourceVector.size() == 2);
+		assert(sourceVector.size() == 12);
 
 		return ProjectionParameters(
-			this->rotationMatrix,
-			this->f,
-			//new CameraDisplacementVector(sourceVector(0), sourceVector(1), sourceVector(2)),
-			this->cameraDisplacementVector,
-			new OpticalAxisVector(sourceVector(0), sourceVector(1))
+			new RotationMatrix(sourceVector(0), sourceVector(1), sourceVector(2), sourceVector(3), sourceVector(4), sourceVector(5)),
+			sourceVector(6),
+			new CameraDisplacementVector(sourceVector(7), sourceVector(8), sourceVector(9)),
+			new OpticalAxisVector(sourceVector(10), sourceVector(11))
 		);
 	}
 };

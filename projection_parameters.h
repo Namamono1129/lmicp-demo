@@ -185,12 +185,15 @@ public:
 		return paramsVector;
 	}
 
-	/* Experimental: Only accepts 2d vector for optical axes */
+	/* Experimental: Only accepts 5d vector for camera displacement(tau) & optical axes(o) */
 	ProjectionParameters createFromVector(Eigen::VectorXf sourceVector)
 	{
+		assert(sourceVector.size() == 2);
+
 		return ProjectionParameters(
 			this->rotationMatrix,
 			this->f,
+			//new CameraDisplacementVector(sourceVector(0), sourceVector(1), sourceVector(2)),
 			this->cameraDisplacementVector,
 			new OpticalAxisVector(sourceVector(0), sourceVector(1))
 		);

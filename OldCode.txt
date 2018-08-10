@@ -1,0 +1,42 @@
+	float r_11 = 1;
+	float r_12 = 0;
+	float r_13 = 0;
+	float r_21 = 0;
+	float r_22 = 1;
+	float r_23 = 0;
+	Eigen::Matrix<float, 3, 3> R;
+	R << r_11, r_12, r_13,
+		r_21, r_22, r_23,
+		0, 0, 0;
+
+	float f = 100;
+
+	float tau_x = 0;
+	float tau_y = 0;
+	float tau_z = -50;
+	Eigen::Vector3f tau(tau_x, tau_y, tau_z);
+
+	float o_x = 320;
+	float o_y = 240;
+	Eigen::Vector2f o(o_x, o_y);
+
+	float xI_1 = 480;
+	float yI_1 = 372;
+	float xI_2 = 576;
+	float yI_2 = 432;
+	float xI_3 = 320;
+	float yI_3 = 432;
+	Eigen::Vector3f vec_xI(xI_1, xI_2, xI_3);
+	Eigen::Vector3f vec_yI(yI_1, yI_2, yI_3);
+	
+	float x_1 = 0;
+	float y_1 = -50;
+	float z_1 = -50;
+	float x_2 = -50;
+	float y_2 = 50;
+	float z_2 = -50;
+	float x_3 = 50;
+	float y_3 = 50;
+	float z_3 = -50;
+
+	const int N_d = 3;

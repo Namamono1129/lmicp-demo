@@ -196,7 +196,7 @@ public:
 	}
 
 
-	ProjectionParameters createFromVector(Eigen::VectorXf sourceVector)
+	static ProjectionParameters createFromVector(Eigen::VectorXf sourceVector)
 	{
 		assert(sourceVector.size() == 12);
 

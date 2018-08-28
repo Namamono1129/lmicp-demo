@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="ヘッダー ファイル\sample">
+      <UniqueIdentifier>{df784674-f648-41d9-8ec0-403ca2cef734}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -24,6 +27,15 @@
     <ClInclude Include="projection_parameters.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="sample_parameters.h">
+      <Filter>ヘッダー ファイル\sample</Filter>
+    </ClInclude>
+    <ClInclude Include="sample\sample_pointclouds.h">
+      <Filter>ヘッダー ファイル\sample</Filter>
+    </ClInclude>
+    <ClInclude Include="lm-icp.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -31,9 +43,6 @@
     </ClCompile>
     <ClCompile Include="LMICP.cpp">
       <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="lm-icp.h">
-      <Filter>ヘッダー ファイル</Filter>
     </ClCompile>
     <ClCompile Include="lm-icp.cpp">
       <Filter>ソース ファイル</Filter>

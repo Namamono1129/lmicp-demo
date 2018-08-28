@@ -6,7 +6,6 @@
 class RotationMatrix
 {
 private:
-	
 
 public:
 	float r_11;
@@ -15,6 +14,9 @@ public:
 	float r_21;
 	float r_22;
 	float r_23;
+
+	RotationMatrix() {}
+
 	RotationMatrix(float r_11, float r_12, float r_13, float r_21, float r_22, float r_23)
 	{
 		this->r_11 = r_11;
@@ -53,6 +55,7 @@ public:
 	float tau_y;
 	float tau_z;
 
+	CameraDisplacementVector(){}
 	CameraDisplacementVector(float tau_x, float tau_y, float tau_z)
 	{
 		this->tau_x = tau_x;
@@ -83,6 +86,7 @@ public:
 	float o_x;
 	float o_y;
 
+	OpticalAxisVector() {}
 	OpticalAxisVector(float o_x, float o_y)
 	{
 		this->o_x = o_x;
@@ -108,6 +112,8 @@ private:
 public:
 	float f;
 
+	ProjectionMatrix() {}
+
 	ProjectionMatrix(float f)
 	{
 		this->f = f;
@@ -132,24 +138,26 @@ public:
 class ProjectionParameters
 {
 private:
-	RotationMatrix* rotationMatrix;
+	RotationMatrix rotationMatrix;
 	float f;
-	CameraDisplacementVector* cameraDisplacementVector;
-	OpticalAxisVector* opticalAxisVector;
-	ProjectionMatrix* projectionMatrix;
+	CameraDisplacementVector cameraDisplacementVector;
+	OpticalAxisVector opticalAxisVector;
+	ProjectionMatrix projectionMatrix;
 
 public:
+	ProjectionParameters(){}
+
 	ProjectionParameters(
-		RotationMatrix* rotationMatrix,
+		RotationMatrix rotationMatrix,
 		float f,
-		CameraDisplacementVector* cameraDisplacementVector,
-		OpticalAxisVector* opticalAxisVector)
+		CameraDisplacementVector cameraDisplacementVector,
+		OpticalAxisVector opticalAxisVector)
 	{
 		this->rotationMatrix = rotationMatrix;
 		this->f = f;
 		this->cameraDisplacementVector = cameraDisplacementVector;
 		this->opticalAxisVector = opticalAxisVector;
-		this->projectionMatrix = new ProjectionMatrix(f);
+		this->projectionMatrix = ProjectionMatrix(f);
 	}
 
 	Eigen::VectorXf Project(int numData, Eigen::VectorXf pointsToProject)
@@ -163,48 +171,48 @@ public:
 		}
 
 		Eigen::VectorXf projectedPoints(numData * 2);
-		Eigen::MatrixXf P = this->projectionMatrix->asBlockMatrix(numData, zs);
-		Eigen::MatrixXf R = this->rotationMatrix->asBlockMatrix(numData);
-		Eigen::VectorXf tau = this->cameraDisplacementVector->asStackedVector(numData);
-		Eigen::VectorXf o = this->opticalAxisVector->asStackedVector(numData);
+		Eigen::MatrixXf P = this->projectionMatrix.asBlockMatrix(numData, zs);
+		Eigen::MatrixXf R = this->rotationMatrix.asBlockMatrix(numData);
+		Eigen::VectorXf tau = this->cameraDisplacementVector.asStackedVector(numData);
+		Eigen::VectorXf o = this->opticalAxisVector.asStackedVector(numData);
 		projectedPoints = P * (R * pointsToProject + tau) + o;
 		return projectedPoints;
 	}
 
 	void UpdateOpticalAxis(Eigen::Matrix2f new_vec_o)
 	{
-		this->opticalAxisVector = new OpticalAxisVector(new_vec_o(0), new_vec_o(1));
+		this->opticalAxisVector = OpticalAxisVector(new_vec_o(0), new_vec_o(1));
 	}
 
 
 	Eigen::VectorXf GetParamsAsVector()
 	{
 		Eigen::VectorXf paramsVector(12);	// MagicNumber
-		paramsVector(0) = this->rotationMatrix->r_11;
-		paramsVector(1) = this->rotationMatrix->r_12;
-		paramsVector(2) = this->rotationMatrix->r_13;
-		paramsVector(3) = this->rotationMatrix->r_21;
-		paramsVector(4) = this->rotationMatrix->r_22;
-		paramsVector(5) = this->rotationMatrix->r_23;
+		paramsVector(0) = this->rotationMatrix.r_11;
+		paramsVector(1) = this->rotationMatrix.r_12;
+		paramsVector(2) = this->rotationMatrix.r_13;
+		paramsVector(3) = this->rotationMatrix.r_21;
+		paramsVector(4) = this->rotationMatrix.r_22;
+		paramsVector(5) = this->rotationMatrix.r_23;
 		paramsVector(6) = this->f;
-		paramsVector(7) = this->cameraDisplacementVector->tau_x;
-		paramsVector(8) = this->cameraDisplacementVector->tau_y;
-		paramsVector(9) = this->cameraDisplacementVector->tau_z;
-		paramsVector(10) = this->opticalAxisVector->o_x;
-		paramsVector(11) = this->opticalAxisVector->o_y;
+		paramsVector(7) = this->cameraDisplacementVector.tau_x;
+		paramsVector(8) = this->cameraDisplacementVector.tau_y;
+		paramsVector(9) = this->cameraDisplacementVector.tau_z;
+		paramsVector(10) = this->opticalAxisVector.o_x;
+		paramsVector(11) = this->opticalAxisVector.o_y;
 		return paramsVector;
 	}
 
 
-	static ProjectionParameters createFromVector(Eigen::VectorXf sourceVector)
+	ProjectionParameters createFromVector(Eigen::VectorXf sourceVector)
 	{
 		assert(sourceVector.size() == 12);
 
 		return ProjectionParameters(
-			new RotationMatrix(sourceVector(0), sourceVector(1), sourceVector(2), sourceVector(3), sourceVector(4), sourceVector(5)),
+			RotationMatrix(sourceVector(0), sourceVector(1), sourceVector(2), sourceVector(3), sourceVector(4), sourceVector(5)),
 			sourceVector(6),
-			new CameraDisplacementVector(sourceVector(7), sourceVector(8), sourceVector(9)),
-			new OpticalAxisVector(sourceVector(10), sourceVector(11))
+			CameraDisplacementVector(sourceVector(7), sourceVector(8), sourceVector(9)),
+			OpticalAxisVector(sourceVector(10), sourceVector(11))
 		);
 	}
 };

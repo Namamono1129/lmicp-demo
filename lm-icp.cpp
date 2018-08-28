@@ -7,19 +7,19 @@
 
 ProjectionParameters FitByLmIcp(ProjectionParameters initialParams, int N_d, Eigen::VectorXf pointsToFit, Eigen::VectorXf groundTruthPoints)
 {
-	const int N_p = 12;
-	const float epsilon = 0.1;
-	const int max_iterations = 100;
-	float lambda = 0.001;
-	float max_lambda = 10.0f;
+	const int N_p = 12;				// Number of data points
+	const int max_iterations = 100;	// Max iterations for fitting
+	float lambda = 0.001;			// Initial value for lambda(see: "Numerical Recipes in C  - P.684")
+	float max_lambda = 10.0f;		// Termination threshold for lambda
 
-	Eigen::VectorXf vec_a = initialParams.GetParamsAsVector();	// set a = a_0
+	Eigen::VectorXf vec_a = initialParams.GetParamsAsVector();	// set vec_a = vec_a_0
 	auto params = initialParams.createFromVector(vec_a);
-	int k = 0;
+	int k = 0;		// Loop count
 	bool nan_detected = false;
+
 	while (k < max_iterations && lambda < max_lambda && !nan_detected)
 	{
-		// Compute e_k (Error Vector)
+		/*** Compute e_k (Error Vector) ***/
 		Eigen::VectorXf projectedPoints = params.Project(N_d, pointsToFit);
 
 		Eigen::VectorXf X(N_d);
@@ -32,14 +32,14 @@ ProjectionParameters FitByLmIcp(ProjectionParameters initialParams, int N_d, Eig
 			vec_e_k(i) = sqrt(X(i) * X(i) + Y(i) * Y(i));
 		}
 
-		// Compute Jacobian Matrix
-		// For experiment and limiting parameters into o_x & o_y, now J is {NdÅ~2}
-
+		// Compute J(Jacobian Matrix)
 		Eigen::MatrixXf J(N_d, N_p);
 
 		for (int i = 0; i < N_d; i++)
 		{
-			float sqrtPowXPlusPowY = sqrt(X(i)*X(i) + Y(i)*Y(i));
+			float sqrtPowXPlusPowY = sqrt(X(i)*X(i) + Y(i)*Y(i));	// Pre-calculate for performance
+
+			// Explanatory variables
 			float x_i = pointsToFit(i * 3 + 0);
 			float y_i = pointsToFit(i * 3 + 1);
 			float z_i = pointsToFit(i * 3 + 2);
@@ -53,29 +53,30 @@ ProjectionParameters FitByLmIcp(ProjectionParameters initialParams, int N_d, Eig
 			float t_x = params.GetParamsAsVector()(7);
 			float t_y = params.GetParamsAsVector()(8);
 			// r1-r6
-			J(i, 0) = -X(i) / sqrtPowXPlusPowY * f / z_i * x_i;
-			J(i, 1) = -X(i) / sqrtPowXPlusPowY * f / z_i * y_i;
-			J(i, 2) = -X(i) * f / sqrtPowXPlusPowY;
-			J(i, 3) = Y(i) / sqrtPowXPlusPowY * f / z_i * x_i;
-			J(i, 4) = Y(i) / sqrtPowXPlusPowY * f / z_i * y_i;
-			J(i, 5) = Y(i) * f / sqrtPowXPlusPowY;
+			J(i, 0) = -X(i) / sqrtPowXPlusPowY * f / z_i * x_i;	// Å›Ei/Å›r_11
+			J(i, 1) = -X(i) / sqrtPowXPlusPowY * f / z_i * y_i;	// Å›Ei/Å›r_12
+			J(i, 2) = -X(i) * f / sqrtPowXPlusPowY;				// Å›Ei/Å›r_13
+			J(i, 3) = Y(i) / sqrtPowXPlusPowY * f / z_i * x_i;	// Å›Ei/Å›r_21
+			J(i, 4) = Y(i) / sqrtPowXPlusPowY * f / z_i * y_i;	// Å›Ei/Å›r_22
+			J(i, 5) = Y(i) * f / sqrtPowXPlusPowY;				// Å›Ei/Å›r_23
 			// f
-			J(i, 6) = (-X(i)*((r_11*x_i + r_12 * y_i + r_13 * z_i + t_x) / z_i) + Y(i)*((r_21*x_i + r_22 * y_i + r_23 * z_i + t_y) / z_i)) / sqrtPowXPlusPowY;
+			J(i, 6) = (-X(i)*((r_11*x_i + r_12 * y_i + r_13 * z_i + t_x) / z_i)
+				+ Y(i)*((r_21*x_i + r_22 * y_i + r_23 * z_i + t_y) / z_i)) / sqrtPowXPlusPowY;	// Å›Ei/Å›f
 			// tau
-			J(i, 7) = -X(i) * f / sqrtPowXPlusPowY / z_i;	// Å›Ei/Å›É—_x
+			J(i, 7) = -X(i) * f / sqrtPowXPlusPowY / z_i;		// Å›Ei/Å›É—_x
 			J(i, 8) = Y(i) * f / sqrtPowXPlusPowY / z_i;		// Å›Ei/Å›É—_y
-			J(i, 9) = 0;															// Å›Ei/Å›É—_z
-																					// o
-			J(i, 10) = -X(i) / sqrtPowXPlusPowY;	// Å›Ei/Å›o_x
-			J(i, 11) = -Y(i) / sqrtPowXPlusPowY;	// Å›Ei/Å›o_y
+			J(i, 9) = 0;										// Å›Ei/Å›É—_z
+			// o
+			J(i, 10) = -X(i) / sqrtPowXPlusPowY;				// Å›Ei/Å›o_x
+			J(i, 11) = -Y(i) / sqrtPowXPlusPowY;				// Å›Ei/Å›o_y
 		}
-		Eigen::MatrixXf JT = J.transpose();
-
+		// Modify lambda until vec_a - (J^TJ + É…I)^-1J^Te_k reduces the error || vec_e(vec_a_k) ||^2
 		while (lambda < max_lambda)
 		{
+			Eigen::MatrixXf JT = J.transpose();
 			Eigen::MatrixXf lambdaI = Eigen::MatrixXf::Identity(N_p, N_p) * lambda;
 			Eigen::VectorXf vec_a_k = vec_a - (JT * J + lambdaI).inverse() * JT * vec_e_k;
-			// Compute New Errors
+			// Compute New Error
 			Eigen::VectorXf vec_e_k_candidate(N_d);
 			auto newParams = params.createFromVector(vec_a_k);
 			Eigen::VectorXf newProjectedPoints = newParams.Project(N_d, pointsToFit);
@@ -104,8 +105,8 @@ ProjectionParameters FitByLmIcp(ProjectionParameters initialParams, int N_d, Eig
 			}
 
 			if (vec_e_k.norm() > vec_e_k_candidate.norm())
+			// If (J^TJ + É…I)^-1J^Te_k reduces the error
 			{
-				std::cout << "break!" << std::endl << std::endl;
 				params = params.createFromVector(vec_a_k);
 				vec_a = params.GetParamsAsVector();
 				break;

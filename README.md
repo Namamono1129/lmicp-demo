@@ -17,6 +17,9 @@ Green points are default 3D points which are projected with default camera param
 Blue circles denote "ground-truth" or "objective" points. LM-ICP aims to obtain specific camera parameters which project green points as close as possible to blue circles.
 Red points are actual projection with parameters obtained in LM-ICP.
 
+# Requirements
+Eigen, OpenCV
+
 # Reference
 Robust Registration of 2D and 3D Point Sets
 https://www.robots.ox.ac.uk/~cvrg/michaelmas2004/fitzgibbon01c.pdf

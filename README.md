@@ -13,6 +13,7 @@ The camera model is from Guosheng Hu et al.(2017)
 
 # Result
 ![Result](https://i.imgur.com/jfVImFw.jpg "Result")
+
 Green points are default 3D points which are projected with default camera parameters.
 Blue circles denote "ground-truth" or "objective" points. LM-ICP aims to obtain specific camera parameters which project green points as close as possible to blue circles.
 Red points are actual projection with parameters obtained in LM-ICP.
